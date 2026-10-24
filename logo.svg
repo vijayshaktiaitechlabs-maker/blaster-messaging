@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" rx="224" fill="#15803D"/>
+  <!-- speaker cone: one message going out to many -->
+  <path d="M250 430 L470 330 L470 694 L250 594 Z" fill="#FCFCFD"/>
+  <rect x="200" y="430" width="90" height="164" rx="22" fill="#FCFCFD"/>
+  <path d="M560 400 Q620 512 560 624" fill="none" stroke="#FCFCFD" stroke-width="44" stroke-linecap="round"/>
+  <path d="M650 330 Q760 512 650 694" fill="none" stroke="#FCFCFD" stroke-width="44" stroke-linecap="round"/>
+  <path d="M740 260 Q900 512 740 764" fill="none" stroke="#FCFCFD" stroke-width="44" stroke-linecap="round" opacity="0.55"/>
+</svg>
