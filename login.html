@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Sign in, WhatsApp Blaster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="app.css">
+<script>
+/* Runtime settings, as in index.html: the build fills the placeholders for a live install; demo mode uses none of them. */
+window.WB_CONFIG = { demo: false, supabaseUrl: 'https://vcfqyrqjpdslxkonnvdt.supabase.co', supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjZnF5cnFqcGRzbHhrb25udmR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5MTUyMDgsImV4cCI6MjEwODQ5MTIwOH0.ryU7OTg7e3MMbvZC_97NdhiEZWx87BjcPVsPDwDERzo' };
+try { var t = localStorage.getItem('wb_theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+/* live mode: the pinned sign-in library and auth.js (Supabase Auth with the public key only); demo mode loads nothing */
+if (window.WB_CONFIG.demo === false) ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js', 'auth.js'].forEach(function (src) {
+  var s = document.createElement('script'); s.src = src; s.async = false; if (/^https:/.test(src)) s.crossOrigin = 'anonymous'; document.head.appendChild(s);
+});
+</script>
+</head>
+<body>
+<div class="auth">
+  <aside class="auth-side">
+    <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 1024 1024"><path d="M250 430 L470 330 L470 694 L250 594 Z" fill="#fcfcfd"/><rect x="200" y="430" width="90" height="164" rx="22" fill="#fcfcfd"/><path d="M560 400 Q620 512 560 624" fill="none" stroke="#fcfcfd" stroke-width="44" stroke-linecap="round"/><path d="M650 330 Q760 512 650 694" fill="none" stroke="#fcfcfd" stroke-width="44" stroke-linecap="round"/><path d="M740 260 Q900 512 740 764" fill="none" stroke="#fcfcfd" stroke-width="44" stroke-linecap="round" opacity=".55"/></svg></span><div class="brand-text"><span class="name">WhatsApp Blaster</span><span class="org">Campaigns and a shared inbox on your own WhatsApp number</span></div></div>
+    <div class="points">
+      <h2>Your number, your contacts, your Meta account. We handle the sending.</h2>
+      <div class="pt"><svg class="ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5 16 5v5c0 3.5-2.5 6-6 7.5C6.5 16 4 13.5 4 10V5z"/><path d="m7.5 10 2 2 3.5-4"/></svg><div>Connect in a Meta pop-up. No developer account, no tokens to paste.</div></div>
+      <div class="pt"><svg class="ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5v3h2.5l6 3.5V5l-6 3.5z"/><path d="M14.5 7.5a3.5 3.5 0 0 1 0 5"/></svg><div>Send approved templates to groups, see delivered, read and replied per contact.</div></div>
+      <div class="pt"><svg class="ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5h4l1.5 2h3l1.5-2h4"/><path d="M4.5 4.5h11l1.5 7v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4z"/></svg><div>Replies land in one inbox your whole team can answer from.</div></div>
+    </div>
+    <div class="legal"><a href="../legal-site/privacy.html">Privacy policy</a><a href="../legal-site/terms.html">Terms of service</a><a href="../legal-site/data-deletion.html">Data deletion</a></div>
+  </aside>
+  <main class="auth-main">
+    <div class="auth-card">
+      <div><h1>Sign in</h1><p class="lead">Welcome back. Use the email you joined with.</p></div>
+      <div class="demo-note" id="demoNote">Demo: any email and password open the sample workspace. Nothing is sent or stored.</div>
+      <form id="loginForm" novalidate>
+        <div class="field"><label for="email">Email</label><input class="input" id="email" type="email" autocomplete="username" required inputmode="email"><span class="err" id="emailErr"></span></div>
+        <div class="field"><label for="password">Password</label><div class="pw"><input class="input" id="password" type="password" autocomplete="current-password" required minlength="8"><button class="btn sm ghost" type="button" id="showPw" aria-pressed="false">Show</button></div><span class="err" id="pwErr"></span></div>
+        <div class="row between"><label class="row" style="gap:8px"><input type="checkbox" class="check" id="remember" checked> <span class="small">Keep me signed in on this device</span></label><a href="reset.html" class="small">Forgot your password?</a></div>
+        <button class="btn primary block" type="submit" id="signIn">Sign in</button>
+      </form>
+      <p class="foot-link">New here? <a href="signup.html">Create a workspace</a>, free for 14 days.</p>
+      <p class="fine">Signing in from a shared computer? Untick "Keep me signed in". We never ask for your WhatsApp or Facebook password.</p>
+    </div>
+  </main>
+</div>
+<script>
+(function () {
+  var live = window.WB_CONFIG.demo === false;
+  /* live: the demo notes do not apply; the sign-in library loads after this script, so calls wait for it */
+  if (live) Array.prototype.forEach.call(document.querySelectorAll('.demo-note'), function (n) { n.hidden = true; });
+  var auth = function () { return new Promise(function (ok, no) { var n = 0; (function wait() { if (window.WB_AUTH && window.supabase) return ok(window.WB_AUTH); if (++n > 100) return no(new Error('The sign-in service did not load. Check your connection and reload the page.')); setTimeout(wait, 100); })(); }); };
+  var f = document.getElementById('loginForm'), e = document.getElementById('email'), p = document.getElementById('password');
+  document.getElementById('showPw').onclick = function () { var show = p.type === 'password'; p.type = show ? 'text' : 'password'; this.textContent = show ? 'Hide' : 'Show'; this.setAttribute('aria-pressed', String(show)); };
+  f.onsubmit = function (ev) {
+    ev.preventDefault(); var ok = true;
+    document.getElementById('emailErr').textContent = ''; document.getElementById('pwErr').textContent = ''; e.classList.remove('invalid'); p.classList.remove('invalid');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e.value.trim())) { document.getElementById('emailErr').textContent = 'Enter the email address you joined with.'; e.classList.add('invalid'); ok = false; }
+    if (p.value.length < 8) { document.getElementById('pwErr').textContent = 'Passwords have at least 8 characters.'; p.classList.add('invalid'); ok = false; }
+    if (!ok) return;
+    var b = document.getElementById('signIn'); b.disabled = true; b.textContent = 'Signing in';
+    if (!live) { setTimeout(function () { location.href = 'index.html'; }, 500); return; }
+    var fail = function (er) { document.getElementById('pwErr').textContent = (er && er.message) || String(er); b.disabled = false; b.textContent = 'Sign in'; };
+    auth().then(function (A) { return A.signIn(e.value.trim(), p.value); }).then(function () { location.href = 'index.html'; }, fail);
+  };
+  /* live: already signed in, straight to the console */
+  if (live) auth().then(function (A) { return A.session(); }).then(function (x) { if (x) location.href = 'index.html'; }, function () {});
+})();
+</script>
+</body>
+</html>

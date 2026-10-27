@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Reset your password, WhatsApp Blaster</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="app.css">
+<script>
+/* Runtime settings, as in index.html: the build fills the placeholders for a live install; demo mode uses none of them. */
+window.WB_CONFIG = { demo: false, supabaseUrl: 'https://vcfqyrqjpdslxkonnvdt.supabase.co', supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjZnF5cnFqcGRzbHhrb25udmR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5MTUyMDgsImV4cCI6MjEwODQ5MTIwOH0.ryU7OTg7e3MMbvZC_97NdhiEZWx87BjcPVsPDwDERzo' };
+try { var t = localStorage.getItem('wb_theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+/* live mode: the pinned sign-in library and auth.js (Supabase Auth with the public key only); demo mode loads nothing */
+if (window.WB_CONFIG.demo === false) ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js', 'auth.js'].forEach(function (src) {
+  var s = document.createElement('script'); s.src = src; s.async = false; if (/^https:/.test(src)) s.crossOrigin = 'anonymous'; document.head.appendChild(s);
+});
+</script>
+</head>
+<body>
+<div class="auth">
+  <aside class="auth-side">
+    <div class="brand"><span class="mark" aria-hidden="true"><svg viewBox="0 0 1024 1024"><path d="M250 430 L470 330 L470 694 L250 594 Z" fill="#fcfcfd"/><rect x="200" y="430" width="90" height="164" rx="22" fill="#fcfcfd"/><path d="M560 400 Q620 512 560 624" fill="none" stroke="#fcfcfd" stroke-width="44" stroke-linecap="round"/><path d="M650 330 Q760 512 650 694" fill="none" stroke="#fcfcfd" stroke-width="44" stroke-linecap="round"/><path d="M740 260 Q900 512 740 764" fill="none" stroke="#fcfcfd" stroke-width="44" stroke-linecap="round" opacity=".55"/></svg></span><div class="brand-text"><span class="name">WhatsApp Blaster</span><span class="org">Campaigns and a shared inbox on your own WhatsApp number</span></div></div>
+    <div class="points">
+      <h2>Locked out? It takes a minute.</h2>
+      <div class="pt"><svg class="ico" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="9" width="10" height="8" rx="1.5"/><path d="M7 9V6.5a3 3 0 0 1 6 0V9"/></svg><div>The reset link works once and expires after 30 minutes. Your campaigns and inbox are not affected.</div></div>
+    </div>
+    <div class="legal"><a href="../legal-site/privacy.html">Privacy policy</a><a href="../legal-site/terms.html">Terms of service</a></div>
+  </aside>
+  <main class="auth-main">
+    <div class="auth-card" id="step1">
+      <div><h1>Reset your password</h1><p class="lead">Enter your email and we send a link to choose a new password.</p></div>
+      <div class="demo-note">Demo: no email is sent. The next screen shows what you would see.</div>
+      <form id="resetForm" novalidate>
+        <div class="field"><label for="email">Email</label><input class="input" id="email" type="email" autocomplete="username" required inputmode="email"><span class="err" id="emailErr"></span></div>
+        <button class="btn primary block" type="submit" id="send">Send reset link</button>
+      </form>
+      <p class="foot-link"><a href="login.html">Back to sign in</a></p>
+    </div>
+    <div class="auth-card" id="step2" hidden>
+      <div><h1>Check your email</h1><p class="lead">If <b id="sentTo"></b> has an account, a reset link is on its way. It expires in 30 minutes.</p></div>
+      <p class="fine">Nothing arrived? Look in spam, or check that you typed the email you joined with. For your safety we say the same thing whether or not the address has an account.</p>
+      <div class="row"><a class="btn" href="login.html">Back to sign in</a><button class="btn ghost" id="again">Use another email</button></div>
+    </div>
+  </main>
+</div>
+<script>
+(function () {
+  var live = window.WB_CONFIG.demo === false;
+  /* live: the demo notes do not apply; the sign-in library loads after this script, so calls wait for it */
+  if (live) Array.prototype.forEach.call(document.querySelectorAll('.demo-note'), function (n) { n.hidden = true; });
+  var auth = function () { return new Promise(function (ok, no) { var n = 0; (function wait() { if (window.WB_AUTH && window.supabase) return ok(window.WB_AUTH); if (++n > 100) return no(new Error('The sign-in service did not load. Check your connection and reload the page.')); setTimeout(wait, 100); })(); }); };
+  var f = document.getElementById('resetForm'), e = document.getElementById('email');
+  /* live: opened from the reset email (Supabase puts type=recovery in the link): choose the new password here */
+  if (live && /type=recovery/.test(location.hash + location.search)) {
+    var card = document.getElementById('step1');
+    card.innerHTML = '<div><h1>Choose a new password</h1><p class="lead">At least 8 characters. You are signed in once it is saved.</p></div><form id="newPwForm" novalidate><div class="field"><label for="newPw">New password</label><input class="input" id="newPw" type="password" autocomplete="new-password" required minlength="8"><span class="err" id="newPwErr"></span></div><button class="btn primary block" type="submit" id="savePw">Save password</button></form>';
+    var np = document.getElementById('newPw'); np.focus();
+    document.getElementById('newPwForm').onsubmit = function (ev) { ev.preventDefault(); var sb = document.getElementById('savePw'); sb.disabled = true;
+      auth().then(function (A) { return A.session().then(function () { return A.updatePassword(np.value); }); }).then(function () { location.href = 'index.html'; }, function (er) { document.getElementById('newPwErr').textContent = (er && er.message) || String(er); sb.disabled = false; }); };
+    return;
+  }
+  var showSent = function () {
+    document.getElementById('sentTo').textContent = e.value.trim(); document.getElementById('step1').hidden = true; document.getElementById('step2').hidden = false; document.querySelector('#step2 h1').focus && document.querySelector('#step2 .btn').focus();
+  };
+  f.onsubmit = function (ev) {
+    ev.preventDefault(); document.getElementById('emailErr').textContent = ''; e.classList.remove('invalid');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e.value.trim())) { document.getElementById('emailErr').textContent = 'Enter a valid email address.'; e.classList.add('invalid'); return; }
+    if (!live) { showSent(); return; }
+    var sb = document.getElementById('send'); sb.disabled = true;
+    auth().then(function (A) { return A.sendReset(e.value.trim()); }).then(function () { sb.disabled = false; showSent(); }, function (er) { sb.disabled = false; document.getElementById('emailErr').textContent = (er && er.message) || String(er); });
+  };
+  document.getElementById('again').onclick = function () { document.getElementById('step2').hidden = true; document.getElementById('step1').hidden = false; e.focus(); };
+})();
+</script>
+</body>
+</html>
