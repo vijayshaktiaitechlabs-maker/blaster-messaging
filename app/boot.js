@@ -74,7 +74,16 @@
         /* the message usually arrives first; give it a moment if the callback won the race */
         if (!info) setTimeout(() => { if (!info) finish(new Error('Meta did not say which number was connected. Try again.')); }, env.messageWaitMs || 8000);
         tryResolve();
-      }, { config_id: configId, response_type: 'code', override_default_response_type: true, extras: { setup: {}, featureType: '', sessionInfoVersion: '3' } });
+      /* featureType 'whatsapp_business_app_onboarding' is what lets a business connect a number that is ALREADY
+         running in the WhatsApp Business app, instead of being told to delete that account first. Meta converts the
+         existing account into a backward-compatible Messaging account, keeps the same waba_id, and the Business app
+         goes on working afterwards. It needs a Tech Provider (we are one), Embedded Signup with session logging
+         (sessionInfoVersion below), and the customer on Business app 2.24.17 or newer. It is implied on
+         sessionInfoVersion 5, but we are on 3, where it must be asked for explicitly -- leaving it '' is what made
+         "delete your WhatsApp account first" look like a Meta rule when it was our own parameter.
+         Trade-offs Meta applies to a number used on both: broadcast lists off, disappearing and view-once off for
+         1:1, companion apps unlinked during onboarding, and a 20 messages/second cap. */
+      }, { config_id: configId, response_type: 'code', override_default_response_type: true, extras: { setup: {}, featureType: 'whatsapp_business_app_onboarding', sessionInfoVersion: '3' } });
     }));
   }
   /* the whole button: pop-up, then the server step; asks for the number's existing two-step PIN when Meta needs it */
