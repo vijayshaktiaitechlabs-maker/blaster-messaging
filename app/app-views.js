@@ -17,7 +17,7 @@
     const headerKind = (t) => t.headerType && t.headerType !== 'none' ? t.headerType : t.header ? 'text' : 'none';
     el.innerHTML = head('Templates', 'Meta reviews every template before it can start a conversation. Write it here, submit it, and the status updates when Meta decides.', `<button class="btn" id="syncTpl">${icon('refresh')}Sync from Meta</button><button class="btn primary" id="newTpl">${icon('plus')}New template</button>`) +
       `<div class="row between" style="margin-bottom:12px"><div class="segments">${[['all', 'All', all.length], ['APPROVED', 'Approved', counts('APPROVED')], ['PENDING', 'In review', counts('PENDING')], ['REJECTED', 'Rejected', counts('REJECTED')], ['DRAFT', 'Drafts', counts('DRAFT')]].map(([k, l, n]) => `<button class="seg ${tplFilter === k ? 'on' : ''}" data-f="${k}">${l}<span class="num">${n}</span></button>`).join('')}</div>${counts('REJECTED') ? `<span class="small muted">${counts('REJECTED')} rejected: open it to read Meta's reason and fix the wording.</span>` : ''}</div>
-      <div class="table-wrap">${list.length ? `<table><thead><tr><th scope="col">Template</th><th scope="col">Category</th><th scope="col">Language</th><th scope="col">Header</th><th scope="col">Buttons</th><th scope="col">Status</th><th scope="col">Updated</th></tr></thead><tbody>${list.map((t) => `<tr class="clickable" data-id="${t.id}"><td><span class="mono" style="font-weight:600">${esc(t.name)}</span><span class="sub" style="max-width:420px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(fillTemplate(t))}</span></td><td>${esc(t.category.toLowerCase())}</td><td>${esc(langName(t.language))}</td><td>${headerKind(t)}</td><td class="num">${(t.buttons || []).length || ''}</td><td>${spill(t.status)}${t.status === 'REJECTED' ? `<span class="sub" style="color:var(--bad);max-width:260px">${esc(rejectWords(t.rejectedReason))}</span>` : ''}</td><td class="small muted">${ago(t.updatedAt)}</td></tr>`).join('')}</tbody></table>` : empty('No templates here', tplFilter === 'all' ? 'Write your first template. Utility templates for reminders and notices are approved fastest.' : 'Nothing with this status.', `<button class="btn primary" id="newTpl2">New template</button>`, 'template')}</div>`;
+      <div class="table-wrap">${list.length ? `<table><thead><tr><th scope="col">Template</th><th scope="col">Category</th><th scope="col">Language</th><th scope="col">Header</th><th scope="col">Buttons</th><th scope="col">Status</th><th scope="col">Updated</th></tr></thead><tbody>${list.map((t) => `<tr class="clickable" data-id="${t.id}"><td><span class="mono" style="font-weight:600">${esc(t.name)}</span><span class="sub" style="max-width:420px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(fillTemplate(t))}</span></td><td>${esc(t.category.toLowerCase())}</td><td>${esc(langName(t.language))}</td><td>${esc(headerKind(t))}</td><td class="num">${(t.buttons || []).length || ''}</td><td>${spill(t.status)}${t.status === 'REJECTED' ? `<span class="sub" style="color:var(--bad);max-width:260px">${esc(rejectWords(t.rejectedReason))}</span>` : ''}</td><td class="small muted">${ago(t.updatedAt)}</td></tr>`).join('')}</tbody></table>` : empty('No templates here', tplFilter === 'all' ? 'Write your first template. Utility templates for reminders and notices are approved fastest.' : 'Nothing with this status.', `<button class="btn primary" id="newTpl2">New template</button>`, 'template')}</div>`;
     $$('[data-f]', el).forEach((b) => b.onclick = () => { tplFilter = b.dataset.f; renderTemplates(el); });
     $$('tr[data-id]', el).forEach((c) => c.onclick = () => templateDialog(store.template(c.dataset.id), () => renderTemplates(el)));
     $('#newTpl', el).onclick = () => templateDialog(null, () => renderTemplates(el)); const n2 = $('#newTpl2', el); if (n2) n2.onclick = () => templateDialog(null, () => renderTemplates(el));
@@ -26,7 +26,44 @@
   // Meta's rejection codes in plain words; the full text stays visible in the editor
   const REJECT_WORDS = { INVALID_FORMAT: 'Wording or blanks break Meta\'s format rules', TAG_CONTENT_MISMATCH: 'Category does not match the content', PROMOTIONAL: 'Reads as marketing, not utility', ABUSIVE_CONTENT: 'Content not allowed by Meta', SCAM: 'Looks like a scam to Meta\'s review' };
   const rejectWords = (r) => { const code = String(r || '').split(':')[0].trim(); return REJECT_WORDS[code] || (code ? code.toLowerCase().replace(/_/g, ' ') : 'No reason given'); };
+  // Warning banner for the editor: shown when a Utility or Authentication template contains marketing wording. It is a
+  // warning, not a blocker — the template can still be submitted. Its purpose is to surface the price risk before Meta
+  // silently re-categorises the template at review time.
+  function marketingBanner(m) {
+    if (!m || !m.hits.length) return '';
+    const cheap = m.cheap.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+    const dear = m.dear.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+    const shown = m.hits.slice(0, 4).join(', ');
+    const extra = m.hits.length > 4 ? ' and ' + (m.hits.length - 4) + ' more' : '';
+    return notice('warn', `<b>Meta may re-categorise this as Marketing.</b> Your wording contains marketing terms (${shown}${extra}). Meta's automated policy engine can move a Utility or Authentication template to Marketing at review time, which changes the price from ₹${cheap} to ₹${dear} per message — about 7.5x. Move the offer wording into a Marketing template, or reword this one as a reminder or notice.`) + '<div style="height:12px"></div>';
+  }
   // Meta's template rules, each one checkable so the editor can show which pass
+  // Words that make a Utility or Authentication template read as Marketing. Meta's automated policy engine can
+  // re-categorise the template at review time, which moves it from the cheap plan to the marketing plan per message.
+  const MARKETING_KEYWORDS = [
+    'discount', 'offer', 'sale', 'free', 'buy now', 'limited time', 'cash back', 'cashback',
+    'deal', 'deal of the day', 'price drop', 'promo', 'promotional', 'save up to', 'save %',
+    'buy one get one', 'bogo', 'last chance', 'today only', 'exclusive deal', 'grab the deal',
+    'new customer offer', 'refer and earn', 'referral offer', 'membership offer', 'subscribe and save',
+    'flat % off', 'percent off', 'lowest price', 'clearance', 'stock clearance',
+  ];
+  // Meta's per-message price by template category (INR). Marketing is ~7.5x the utility/authentication rate.
+  const META_PRICE = { UTILITY: 0.115, AUTHENTICATION: 0.115, MARKETING: 0.8631 };
+  // Returns the marketing keywords found anywhere the customer reads the template. Case-insensitive, word-boundary
+  // aware so "offered" does not match "offer" and "salon" does not match "sale".
+  function marketingKeywords(t) {
+    const text = [t.body, t.footer, t.header, ...(t.buttons || []).map((b) => b.text)]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+    const hits = [];
+    for (const kw of MARKETING_KEYWORDS) {
+      if (new RegExp('\\b' + kw.replace(/\s+/g, '\\s+') + '\\b').test(text)) hits.push(kw);
+    }
+    // Drop a keyword when a longer keyword that contains it already matched, e.g. "deal" inside "grab the deal"
+    // or "off" inside "percent off". The longer phrase is what the customer actually wrote.
+    return hits.filter((kw, i) => !hits.some((other, j) => j !== i && other.includes(kw)));
+  }
   function templateRules(t) {
     const body = (t.body || '').trim(); const vars = (body.match(/\{\{(\d+)\}\}/g) || []).map((v) => Number(v.replace(/\D/g, '')));
     const rules = [
@@ -38,7 +75,10 @@
       ['Header and footer are under 60 characters', (t.headerType !== 'text' || (t.header || '').length <= 60) && (t.footer || '').length <= 60],
       ['Buttons: up to 3, each with text under 25 characters', (t.buttons || []).length <= 3 && (t.buttons || []).every((b) => b.text && b.text.length <= 25 && (b.type !== 'url' || /^https?:\/\//.test(b.value || '')) && (b.type !== 'call' || (b.value || '').replace(/\D/g, '').length >= 10))],
     ];
-    return { rules, errs: rules.filter((r) => !r[1]).map((r) => r[0]), vars: vars.length };
+    // A warning, not an error: the template can still be submitted, but the customer should know the price risk.
+    const category = t.category || 'UTILITY';
+    const hits = ['UTILITY', 'AUTHENTICATION'].includes(category) ? marketingKeywords(t) : [];
+    return { rules, errs: rules.filter((r) => !r[1]).map((r) => r[0]), vars: vars.length, marketing: { hits, category, cheap: META_PRICE[category] || 0.115, dear: META_PRICE.MARKETING } };
   }
   function templateDialog(t, done) {
     const isNew = !t; t = t ? JSON.parse(JSON.stringify(t)) : { id: uid(), name: '', category: 'UTILITY', language: 'en', status: 'DRAFT', header: '', headerType: 'none', body: '', footer: '', buttons: [], examples: [], updatedAt: new Date().toISOString() };
@@ -46,10 +86,11 @@
     const locked = ['APPROVED', 'PENDING'].includes(t.status);
     const bg = modal('', { wide: true });
     const draw = () => {
-      const { rules, errs, vars } = templateRules(t); const dis = locked ? 'disabled' : '';
+      const { rules, errs, vars, marketing } = templateRules(t); const dis = locked ? 'disabled' : '';
       $('.modal', bg).innerHTML = `<div class="m-head"><div><h2>${isNew ? 'New template' : esc(t.name)} ${spill(t.status)}</h2><p>${locked ? (t.status === 'APPROVED' ? 'Approved templates cannot be edited at Meta. Make a copy to change the wording.' : 'Waiting for Meta\'s review, usually minutes to a day. Withdraw it to edit.') : 'Write the message the way the customer will read it. Blanks like {{1}} are filled per contact.'}</p></div><button class="icon-btn" data-close aria-label="Close">${icon('x')}</button></div><div class="m-body">
         ${t.status === 'REJECTED' ? notice('bad', `<b>Rejected by Meta: ${esc(rejectWords(t.rejectedReason))}.</b> ${esc(((t.rejectedReason || '').split(': ')[1] || 'No further detail from Meta.').replace(/^./, (c) => c.toUpperCase()))} Fix the wording and submit again; rejections do not count against you.`) + '<div style="height:12px"></div>' : ''}
         ${t.status === 'PAUSED' ? notice('warn', 'Meta paused this template because too many people blocked or reported it. It resumes automatically after a while; meanwhile use another template.') + '<div style="height:12px"></div>' : ''}
+        <div id="mktBanner">${marketingBanner(marketing)}</div>
         <div class="grid2"><div class="stack">
           <div class="grid2"><div class="field"><label for="tn">Name</label><input class="input mono" id="tn" value="${esc(t.name)}" ${dis} placeholder="appointment_reminder"></div><div class="field"><label for="tc">Category</label><select class="input" id="tc" ${dis}>${[['UTILITY', 'Utility: notices, reminders, updates'], ['MARKETING', 'Marketing: offers and promotions'], ['AUTHENTICATION', 'Authentication: one-time codes']].map(([c, l]) => `<option value="${c}" ${t.category === c ? 'selected' : ''}>${l}</option>`).join('')}</select></div></div>
           <div class="grid2"><div class="field"><label for="tl">Language</label><select class="input" id="tl" ${dis}>${LANGS.map(([c, n]) => `<option value="${c}" ${t.language === c ? 'selected' : ''}>${n}</option>`).join('')}</select></div><div class="field"><label for="tht">Header</label><select class="input" id="tht" ${dis}>${[['none', 'None'], ['text', 'Text'], ['image', 'Image'], ['document', 'Document (PDF)']].map(([v, l]) => `<option value="${v}" ${t.headerType === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div></div>
@@ -69,6 +110,7 @@
       const sync = () => {
         read(); const r = templateRules(t);
         $('.phone', bg).outerHTML = phone(waBubble(t)); const l = $('label[for="tb"] .muted', bg); if (l) l.textContent = `(${t.body.length} of 1,024)`;
+        const b = $('#mktBanner', bg); if (b) b.innerHTML = marketingBanner(r.marketing);
         $('#rulesBox', bg).innerHTML = r.rules.map(([x, ok]) => `<li class="${ok ? '' : 'fail'}">${icon(ok ? 'check' : 'x')}<span>${x}</span></li>`).join('');
         const rp = $('#rulesPill', bg); if (rp) rp.innerHTML = r.errs.length ? pill('warn', r.errs.length + ' to fix') : pill('good', 'Ready to submit');
         const sb = $('#tsubmit', bg); if (sb) sb.disabled = r.errs.length > 0;

@@ -2,92 +2,31 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="robots" content="noindex">
-<title>WhatsApp Blaster</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="app.css">
-<script>
-/* Runtime settings. The build replaces the placeholders for a live install; in demo mode none of them is used. */
-window.WB_CONFIG = {
-  demo: false,                                  // true: the console runs on built-in sample data, calls nothing
-  supabaseUrl: 'https://vcfqyrqjpdslxkonnvdt.supabase.co',
-  supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjZnF5cnFqcGRzbHhrb25udmR0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI5MTUyMDgsImV4cCI6MjEwODQ5MTIwOH0.ryU7OTg7e3MMbvZC_97NdhiEZWx87BjcPVsPDwDERzo',
-  webhookBase: 'https://n8n.srv1926343.hstgr.cloud/webhook/blaster-',             // e.g. https://your-n8n.example/webhook
-  metaAppId: '1678675080288373',               // Meta app "Blaster Messaging" that owns Embedded Signup (public ID, not a secret)
-  metaConfigId: '1055086817577938',            // Facebook Login for Business configuration used by the Embedded Signup pop-up
-};
-/* apply the saved theme before first paint so the page does not flash */
-try { var t = localStorage.getItem('wb_theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
-</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blaster Messaging</title>
+<meta name="description" content="Send WhatsApp campaigns from your own business number: contacts, templates, campaigns, reports and a shared inbox.">
+<link rel="icon" href="logo.png">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<a class="skip" href="#work">Skip to content</a>
-<div class="shell">
-  <aside class="rail" id="rail" aria-label="Main">
-    <div class="brand">
-      <span class="mark" aria-hidden="true"><svg viewBox="0 0 1024 1024"><path d="M250 430 L470 330 L470 694 L250 594 Z" fill="#fcfcfd"/><rect x="200" y="430" width="90" height="164" rx="22" fill="#fcfcfd"/><path d="M560 400 Q620 512 560 624" fill="none" stroke="#fcfcfd" stroke-width="44" stroke-linecap="round"/><path d="M650 330 Q760 512 650 694" fill="none" stroke="#fcfcfd" stroke-width="44" stroke-linecap="round"/><path d="M740 260 Q900 512 740 764" fill="none" stroke="#fcfcfd" stroke-width="44" stroke-linecap="round" opacity=".55"/></svg></span>
-      <div class="brand-text"><span class="name">WhatsApp Blaster</span><span class="org" id="orgName">Northwind Services</span></div>
-    </div>
-    <nav class="navs" aria-label="Views">
-      <button class="nav active" data-view="dash" data-icon="home">Dashboard</button>
-      <button class="nav" data-view="inbox" data-icon="inbox">Inbox <span class="badge" id="inboxBadge">0</span></button>
-      <button class="nav" data-view="contacts" data-icon="contacts">Contacts</button>
-      <button class="nav" data-view="campaigns" data-icon="campaign">Campaigns</button>
-      <button class="nav" data-view="templates" data-icon="template">Templates</button>
-      <button class="nav" data-view="reports" data-icon="reports">Reports</button>
-      <div class="nav-sep" role="separator"></div>
-      <button class="nav" data-view="team" data-icon="team">Team</button>
-      <button class="nav" data-view="billing" data-icon="billing">Billing</button>
-      <button class="nav" data-view="settings" data-icon="settings">Settings</button>
-    </nav>
-    <div class="rail-foot">
-      <div class="who"><span class="avatar" id="whoAvatar">PM</span><div><b id="whoName">Priya Menon</b><span class="small muted" id="whoRole">Owner</span></div></div>
-      <span class="small muted" id="railFoot">Demo workspace. Sample data, nothing is sent.</span>
-    </div>
-  </aside>
-  <div class="scrim" id="scrim"></div>
-  <div class="main">
-    <header class="topbar">
-      <button class="icon-btn menu-btn" id="menuBtn" aria-label="Open menu" data-icon="menu"></button>
-      <div class="search" id="searchWrap">
-        <svg class="ico" data-icon="search"></svg>
-        <input id="globalSearch" placeholder="Search contacts, campaigns, templates, pages" aria-label="Search" autocomplete="off">
-        <kbd>Ctrl K</kbd>
-        <div class="palette" id="palette" hidden role="listbox"></div>
-      </div>
-      <span class="demo-pill" id="demoPill" title="Sample data. Nothing is sent to WhatsApp.">Demo<span>, nothing is sent</span></span>
-      <button class="icon-btn" id="themeBtn" aria-label="Switch theme" title="Switch theme" data-icon="theme"></button>
-      <button class="icon-btn" id="helpBtn" aria-label="Help" title="Keyboard shortcuts and help" data-icon="help"></button>
-    </header>
-    <main class="work" id="work">
-      <section class="view active" id="v-dash"></section>
-      <section class="view" id="v-inbox"></section>
-      <section class="view" id="v-contacts"></section>
-      <section class="view" id="v-campaigns"></section>
-      <section class="view" id="v-templates"></section>
-      <section class="view" id="v-reports"></section>
-      <section class="view" id="v-team"></section>
-      <section class="view" id="v-billing"></section>
-      <section class="view" id="v-settings"></section>
-      <section class="view" id="v-bot"></section>
-    </main>
-  </div>
-</div>
-<div class="toasts" id="toasts" aria-live="polite"></div>
-<div id="modalHost"></div>
-<script>
-/* Live mode only (WB_CONFIG.demo false): the pinned sign-in library, sign-in helpers, the live data layer and the
-   start-up. boot.js checks the session (no session: login.html), loads the workspace and then runs app.js and
-   app-views.js with the live store. Demo mode loads none of these and calls nothing outside the page. */
-if (window.WB_CONFIG.demo === false) ['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js', 'auth.js', 'data-live.js', 'boot.js'].forEach(function (src) {
-  var s = document.createElement('script'); s.src = src; s.async = false; if (/^https:/.test(src)) s.crossOrigin = 'anonymous'; document.head.appendChild(s);
-});
-</script>
-<script src="demo-data.js"></script>
-<!-- in live mode these two return at once; boot.js runs them again when the live store is ready -->
-<script src="app.js"></script>
-<script src="app-views.js"></script>
+<header>
+  <img src="logo.png" alt="">
+  <a href="index.html">Blaster Messaging</a>
+  <nav><a href="app/">Sign in</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="data-deletion.html">Data deletion</a></nav>
+</header>
+<main>
+<h1>WhatsApp campaigns from your own business number</h1>
+<p class="meta">By Orena Solutions, Vadodara, India</p>
+<p>Blaster Messaging helps businesses use the official WhatsApp Business Platform without a developer:</p>
+<ul>
+  <li>Connect your own WhatsApp Business number in a few minutes through Meta's sign-up window.</li>
+  <li>Keep your contacts and groups, with opt-in and opt-out.</li>
+  <li>Create message templates and submit them to Meta, and see when they are approved.</li>
+  <li>Send campaigns now or on a schedule, and see who received, read and replied.</li>
+  <li>Answer replies with your team in a shared inbox.</li>
+</ul>
+<p>Meta's message charges are paid by your business directly to Meta. Questions: <a href="mailto:contactus@orena.solutions">contactus@orena.solutions</a>.</p>
+</main>
+<footer>&copy; 2026 Orena Solutions. <a href="privacy.html">Privacy Policy</a> &middot; <a href="terms.html">Terms of Service</a> &middot; <a href="data-deletion.html">Data deletion</a>. Blaster Messaging is not affiliated with or endorsed by Meta Platforms, Inc. WhatsApp is a trademark of Meta Platforms, Inc.</footer>
 </body>
 </html>

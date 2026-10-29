@@ -137,9 +137,9 @@
   LIVE.mapMessage = function (m) {
     const note = m.direction === 'note';
     const kind = m.sender_kind || (m.direction === 'in' ? 'member' : null);
-    return { id: m.id, dir: m.direction === 'in' ? 'in' : 'out', body: note ? '📝 Note: ' + (m.body || '') : (m.body || ''), at: iso(m.created_at), status: m.direction === 'out' ? (m.status || 'sent') : undefined,
+    return { id: m.id, dir: m.direction === 'in' ? 'in' : 'out', body: note ? 'Note: ' + (m.body || '') : (m.body || ''), at: iso(m.created_at), status: m.direction === 'out' ? (m.status || 'sent') : undefined,
       sender: kind === 'member' ? undefined : kind === 'note' ? 'staff' : (kind || undefined), staff: m.sender_email || undefined, template: m.template_name || undefined,
-      media: m.media_url ? (m.msg_type || 'file') : undefined, mediaUrl: m.media_url || undefined, error: m.error_title || undefined, wamid: m.wamid || undefined, isNote: note };
+      media: m.media_url ? (m.msg_type || 'file') : undefined, mediaUrl: m.media_url || undefined, error: m.error_title || undefined, wamid: m.wamid || undefined, isNote: note, note: note };
   };
   /* a conversation: the wa_inbox_list row (jsonb) plus its messages, the contact and the team member it is assigned to */
   LIVE.mapConversation = function (conv, msgs, ctx) {

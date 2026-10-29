@@ -131,7 +131,13 @@
   /* a live page starts itself; a page that includes boot.js in demo mode is unaffected */
   if (!CFG.demo && !window.WB_BOOT_MANUAL && typeof document !== 'undefined') {
     const go = () => start().catch((e) => { console.error(e);
-      if (window.WB_LIVE && window.WB_LIVE.isAuthError(e && e.message)) { location.href = 'login.html'; return; } message(document, 'The console could not start: ' + String(e.message || e).replace(/[<>&]/g, '') + ' <a href="login.html">Sign in again</a>'); });
+      /* the stored token can still look valid locally while the server rejects it (user removed, sessions revoked,
+         JWT secret rotated). Going straight to login.html would bounce back here, because the login page only checks
+         local expiry. Sign out first so the stale session is cleared. */
+      if (window.WB_LIVE && window.WB_LIVE.isAuthError(e && e.message)) {
+        if (window.WB_AUTH && window.WB_AUTH.signOut) window.WB_AUTH.signOut().catch(() => { location.href = 'login.html'; });
+        else location.href = 'login.html';
+        return; } message(document, 'The console could not start: ' + String(e.message || e).replace(/[<>&]/g, '') + ' <a href="login.html">Sign in again</a>'); });
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go); else go();
   }
 })();
